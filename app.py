@@ -26,6 +26,9 @@ from core.audio.audio_to_audio import (
     encode_audio_into_audio,
     decode_audio_from_audio
 )
+from core.audio.audio_to_image import encode_audio_into_image, decode_audio_from_image
+from core.audio.audio_to_text import encode_audio_into_text, decode_audio_from_text
+from core.audio.audio_to_video import encode_audio_into_video, decode_audio_from_video
 
 
 
@@ -49,7 +52,10 @@ implemented_pairs = {
     ("Image", "Video"),
     ("Image", "Text"),
     ("Image", "Audio"),
-    ("Audio", "Audio")
+    ("Audio", "Audio"),
+    ("Audio", "Image"),
+    ("Audio", "Text"),
+    ("Audio", "Video")
 }
 
 
@@ -475,4 +481,179 @@ elif hidden_type == "Audio" and carrier_type == "Audio":
             except Exception as e:
                 st.error(str(e))
 
+# ======================================================
+# AUDIO → IMAGE (WAV → PNG)
+# ======================================================
+elif hidden_type == "Audio" and carrier_type == "Image":
 
+    if operation == "Encode":
+        cover_img = st.file_uploader(
+            "🖼️ Upload Cover Image (PNG only)",
+            type=["png"]
+        )
+        hidden_audio = st.file_uploader(
+            "🕵️ Upload Hidden Audio (WAV only)",
+            type=["wav"]
+        )
+
+        if st.button("🧬 Encode Audio into Image"):
+            try:
+                if not cover_img or not hidden_audio:
+                    raise ValueError("Both cover PNG and hidden WAV files are required")
+
+                stego_image = encode_audio_into_image(cover_img, hidden_audio)
+                st.success("✅ Hidden audio embedded successfully")
+
+                from io import BytesIO
+                buf = BytesIO()
+                stego_image.save(buf, format="PNG")
+                buf.seek(0)
+
+                st.download_button(
+                    "📥 Download Stego PNG",
+                    buf,
+                    "hermes_image_stego.png",
+                    "image/png"
+                )
+
+            except Exception as e:
+                st.error(str(e))
+
+    else:
+        stego_img = st.file_uploader(
+            "🖼️ Upload Stego Image (PNG only)",
+            type=["png"]
+        )
+
+        if st.button("🔍 Decode Hidden Audio"):
+            try:
+                if not stego_img:
+                    raise ValueError("Stego PNG image required")
+
+                hidden_bytes = decode_audio_from_image(stego_img)
+                st.success("✅ Hidden audio extracted")
+
+                st.download_button(
+                    "📥 Download Hidden Audio",
+                    hidden_bytes,
+                    "hidden_audio.wav",
+                    "audio/wav"
+                )
+
+            except Exception as e:
+                st.error(str(e))
+
+# ======================================================
+# AUDIO → TEXT
+# ======================================================
+elif hidden_type == "Audio" and carrier_type == "Text":
+
+    if operation == "Encode":
+        cover_text = st.text_area(
+            "📄 Cover Text",
+            height=180
+        )
+        hidden_audio = st.file_uploader(
+            "🕵️ Upload Hidden Audio (WAV only)",
+            type=["wav"]
+        )
+
+        if st.button("🧬 Encode Audio into Text"):
+            try:
+                if not cover_text or not hidden_audio:
+                    raise ValueError("Cover text and WAV audio are required")
+
+                out_text = encode_audio_into_text(cover_text, hidden_audio)
+                st.success("✅ Audio embedded into text")
+
+                st.download_button(
+                    "📥 Download Stego Text",
+                    out_text,
+                    "hermes_text_stego.txt",
+                    "text/plain"
+                )
+
+            except Exception as e:
+                st.error(str(e))
+
+    else:
+        stego_text = st.file_uploader(
+            "📂 Upload Stego Text File",
+            type=["txt"]
+        )
+
+        if st.button("🔍 Decode Hidden Audio"):
+            try:
+                if not stego_text:
+                    raise ValueError("Stego text file required")
+
+                text_data = stego_text.read().decode("utf-8")
+                audio_bytes = decode_audio_from_text(text_data)
+                st.success("✅ Hidden audio extracted")
+
+                st.download_button(
+                    "📥 Download Hidden Audio",
+                    audio_bytes,
+                    "hidden_audio.wav",
+                    "audio/wav"
+                )
+
+            except Exception as e:
+                st.error(str(e))
+
+# ======================================================
+# AUDIO → VIDEO
+# ======================================================
+elif hidden_type == "Audio" and carrier_type == "Video":
+
+    if operation == "Encode":
+        video = st.file_uploader(
+            "🎬 Upload Video (MP4 / MKV / AVI)",
+            type=["mp4", "mkv", "avi"]
+        )
+        hidden_audio = st.file_uploader(
+            "🕵️ Upload Hidden Audio (WAV only)",
+            type=["wav"]
+        )
+
+        if st.button("🧬 Encode Audio into Video"):
+            try:
+                if not video or not hidden_audio:
+                    raise ValueError("Video and WAV audio are required")
+
+                out = encode_audio_into_video(video, hidden_audio)
+                st.success("✅ Hidden audio embedded into video")
+
+                st.download_button(
+                    "📥 Download Stego Video",
+                    out,
+                    "hermes_video_stego.mp4",
+                    "video/mp4"
+                )
+
+            except Exception as e:
+                st.error(str(e))
+
+    else:
+        video = st.file_uploader(
+            "🎬 Upload Stego Video",
+            type=["mp4", "mkv", "avi"]
+        )
+
+        if st.button("🔍 Decode Hidden Audio"):
+            try:
+                if not video:
+                    raise ValueError("Stego video required")
+
+                audio_bytes = decode_audio_from_video(video)
+                st.success("✅ Hidden audio extracted")
+
+                st.download_button(
+                    "📥 Download Hidden Audio",
+                    audio_bytes,
+                    "hidden_audio.wav",
+                    "audio/wav"
+                )
+
+            except Exception as e:
+                st.error(str(e))
