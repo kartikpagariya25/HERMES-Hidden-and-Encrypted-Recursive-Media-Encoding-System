@@ -38,13 +38,27 @@ Explore the fully implemented matrix of carrier and hidden-data pairs:
 
 Deploy Hermes locally with just a few commands!
 
-### Prerequisites
+## Prerequisites
 
-Ensure you have Python 3.8+ installed. Then install the required dependencies:
+Ensure you have Python 3.8+ installed.
 
+**Install FFmpeg (required for Video steganography):**
+
+- **Windows:** `winget install ffmpeg`
+- **macOS:** `brew install ffmpeg`
+- **Linux:** `sudo apt install ffmpeg`
+
+After installing, verify with:
+```bash
+ffmpeg -version
+```
+
+Then install Python dependencies:
 ```bash
 pip install -r requirements.txt
 ```
+
+That's all you need to add. Simple and clear for anyone setting up the project.
 
 ### Running the Application
 
